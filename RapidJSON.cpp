@@ -1,9 +1,12 @@
 #include <iostream>
+#include <fstream>
 #include <vector>
+#include <string>
+
 #include "rapidjson/document.h"
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
-#include <vector>
+
 using namespace std;
 // ------------------------------------------------------------------------------
 // We use RadipJson to serialize and deserialize a vector of Person objects
@@ -21,12 +24,54 @@ using namespace std;
 // - Documentation: http://rapidjson.org/
 // - Download from: https://github.com/Tencent/rapidjson/
 // ------------------------------------------------------------------------------
+
+
 class Person {
 public:  //Lazy definition 
     string name;
     int    age;
     Person(string nameVal = "na", int ageVal = 0) { name = nameVal; age = ageVal; }
 };
+
+
+// Prototypes ---------------------------------------------------------------------
+string EncodePersonsToJson(const vector<Person>& persons);
+vector<Person> DecodeJsonToPersons(const string& json);
+
+//----------------------------------------------------------------------------------
+int main() {
+    // Create some Person objects 
+    vector<Person> persons = {
+        Person("Homer", 39),
+        Person("Bart", 10),
+        Person("Lisa", 9),
+    };
+
+
+    // Transform the vector<Person> container to JSON format (SAX style)
+    string encodedJson = EncodePersonsToJson(persons);
+    cout << "\n EncodedJson: \n\t" << encodedJson << endl;
+
+    // Save the JSON formatted data to a disk text-file
+    fstream fout("c:/temp/persons.json", ios::out);
+    fout << encodedJson;
+    fout.close();
+
+    // Read the JSON formatted data from the disk text-file
+    fstream fin("c:/temp/persons.json", ios::in);
+    getline(fin, encodedJson);
+
+    // Decode the JSON formatted data back into a vector of Person objects
+    vector<Person> decodedPersons = DecodeJsonToPersons(encodedJson);
+
+    // Print the decoded Person objects
+    cout << "\n Decoded Json string:\n";
+    for (const Person& personObj : decodedPersons) {
+        std::cout << "\tPerson [Name: " << personObj.name << ", Age: " << personObj.age << "]\n";
+    }
+
+    
+}
 
 // ------------------------------------------------------------------------------
 // Function to encode a vector of Person objects to JSON
@@ -37,7 +82,7 @@ string EncodePersonsToJson(const vector<Person>& persons) {
     rapidjson::StringBuffer buffer;
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
 
-   
+
     writer.StartArray();
 
     for (const Person& person : persons) {
@@ -55,6 +100,7 @@ string EncodePersonsToJson(const vector<Person>& persons) {
 }
 // ------------------------------------------------------------------------------
 // Function to decode JSON into a vector of Person objects
+// ------------------------------------------------------------------------------
 vector<Person> DecodeJsonToPersons(const string& json) {
     vector<Person> persons;
 
@@ -97,29 +143,4 @@ vector<Person> DecodeJsonToPersons(const string& json) {
     }
 
     return persons;
-}
-//------------------------------------------------------------------------------
-int main() {
-    // Create some Person objects 
-    vector<Person> persons = {
-        Person("Homer", 39),
-        Person("Bart", 10),
-        Person("Lisa", 9),
-    };
-
-
-    // Transform the vector<Person> container to JSON format (SAX style)
-    string encodedJson = EncodePersonsToJson(persons);
-    cout << "encodedJson: \n\t" << encodedJson << endl;
-
-    // Decode the JSON formatted data back into a vector of Person objects
-    vector<Person> decodedPersons = DecodeJsonToPersons(encodedJson);
-
-    // Print the decoded Person objects
-    cout << "Decoded Json string:\n";
-    for (const Person& personObj : decodedPersons) {
-        std::cout << "\tPerson [Name: " << personObj.name << ", Age: " << personObj.age << "]\n";
-    }
-
-    
 }
